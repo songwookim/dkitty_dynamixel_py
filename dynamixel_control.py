@@ -148,8 +148,9 @@ class DynamixelControl:
         else :
             return dxl_present_positions    
 
-    def set_joint_positions(self, goal_pos, ids=[10,11,12,20,21,22,30,31,32]) :
+    def set_joint_positions(self, goal_pos) :
         ADDR_GOAL_POSITION = self.cfg.control_table.ADDR_GOAL_POSITION
+        ids = self.cfg.ids
         dxl_present_positions = []
         
         for idx,id in enumerate(ids):
@@ -157,10 +158,11 @@ class DynamixelControl:
             dxl_comm_result, dxl_error = self.packetHandler.write4ByteTxRx(
                 self.portHandler, id, ADDR_GOAL_POSITION, goal_pos[idx])
             if dxl_comm_result != COMM_SUCCESS:
-                raise Exception(f"Failed to get position: {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+                raise Exception(f"Failed to set position: {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+                print("works?")
             elif dxl_error != 0:
                 raise Exception(f"Dynamixel error: {self.packetHandler.getRxPacketError(dxl_error)}")
-
+            # print("works!")
 
         
     
