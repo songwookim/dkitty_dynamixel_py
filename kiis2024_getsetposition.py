@@ -10,8 +10,10 @@ def main(cfg: DictConfig):
     controller = DynamixelControl(cfg.dynamixel)
     controller.connect()
     cur_deg = controller.get_joint_positions()
-    initial_val = [1000, 1700, 2500, 1000, 1700, 2500, 1000, 1700, 2500]
-    controller.set_joint_positions(initial_val)
+    # initial_val = [1000, 1700, 2500, 1000, 1700, 2500, 1000, 1700, 2500]
+    # controller.set_joint_positions(initial_val)
+    initial_val = [1,1,1,1,1,1,1,1]
+    controller.test_torqueinput(initial_val)
     cur_deg = controller.dynamixel_pos_to_deg(initial_val)
     
     print(cur_deg)

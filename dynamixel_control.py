@@ -3,6 +3,7 @@ import tty
 import termios
 from dynamixel_sdk import *  # Uses Dynamixel SDK library
 import numpy as np  
+
 class DynamixelControl:
     def __init__(self, config):
         self.cfg = config
@@ -38,7 +39,28 @@ class DynamixelControl:
         
         self.enable_torque() # for dynamaixel operation
         # self.disable_torque() # for torque input operation
+    def set_delaytime(self, delaytime): # 0~254
+        for id in self.cfg.ids:
+            dxl_comm_result, dxl_error = self.packetHandler.write1ByteTxRx(
+                self.portHandler, id, self.cfg.control_table.addr_delaytime, delaytime)
+            if dxl_comm_result != COMM_SUCCESS:
+                raise Exception(f"Failed to set delaytime: {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+            elif dxl_error != 0:
+                raise Exception(f"Dynamixel error: {self.packetHandler.getRxPacketError(dxl_error)}")
+            else:
+                print(f"Delaytime set for Dynamixel ID {id}")
 
+    def set_baudrate(self, baudrate): # 0 ~7
+        for id in self.cfg.ids:
+            dxl_comm_result, dxl_error = self.packetHandler.write4ByteTxRx(
+                self.portHandler, id, self.cfg.control_table.addr_baudrate, baudrate)
+            if dxl_comm_result != COMM_SUCCESS:
+                raise Exception(f"Failed to set baudrate: {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+            elif dxl_error != 0:
+                raise Exception(f"Dynamixel error: {self.packetHandler.getRxPacketError(dxl_error)}")
+            else:
+                print(f"Baudrate set for Dynamixel ID {id}")
+                            
 
     def set_operating_mode_all(self, mode):
         for id in self.cfg.ids:
@@ -211,3 +233,20 @@ class DynamixelControl:
         self.disable_torque()
         self.portHandler.closePort()
         print("Port closed")
+
+    def test_torqueinputs(self, ids, input_torque, log=False):
+        ADDR_GOAL_CURRENT = self.cfg.control_table.ADDR_GOAL_CURRENT
+        for idx,id in enumerate(ids):
+            print(idx)
+            if abs(input_torque.any()) >= 10 :
+                print(f"Torque input is too high")
+                return
+            dxl_comm_result, dxl_error = self.packetHandler.write2ByteTxRx(
+                self.portHandler, id, ADDR_GOAL_CURRENT, input_torque[idx])
+            if dxl_comm_result != COMM_SUCCESS:
+                raise Exception(f"Failed to write torque: {self.packetHandler.getTxRxResult(dxl_comm_result)}")
+            elif dxl_error != 0:
+                raise Exception(f"Dynamixel error: {self.packetHandler.getRxPacketError(dxl_error)}")
+            else:
+                if log:
+                    print(f"Torque written for Dynamixel ID {id}")
